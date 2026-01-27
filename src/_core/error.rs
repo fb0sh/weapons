@@ -4,17 +4,21 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("database error: {0}")]
-    Db(String),
+    DbError(String),
 
     #[error("Authentication error")]
     AuthError,
+
+    #[error("JWT error: {0}")]
+    JwtError(#[from] jsonwebtoken::errors::Error),
 }
 
 impl ResponseError for Error {
     fn error_response(&self) -> HttpResponse {
         match self {
-            Error::Db(e) => HttpResponse::InternalServerError().body(e.to_string()),
+            Error::DbError(e) => HttpResponse::InternalServerError().body(e.to_string()),
             Error::AuthError => HttpResponse::Unauthorized().body("Authentication error"),
+            Error::JwtError(e) => HttpResponse::Unauthorized().body(e.to_string()),
         }
     }
 }
@@ -22,7 +26,7 @@ impl ResponseError for Error {
 impl From<surrealdb::Error> for Error {
     fn from(error: surrealdb::Error) -> Self {
         eprintln!("{error}");
-        Self::Db(error.to_string())
+        Self::DbError(error.to_string())
     }
 }
 

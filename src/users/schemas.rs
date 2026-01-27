@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct RegisterUser {

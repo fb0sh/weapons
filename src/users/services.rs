@@ -1,11 +1,10 @@
-use crate::models::users::User;
+use super::*;
 use crate::prelude::*;
-use crate::schemas::users::{LoginUser, RegisterUser, UserResponse};
 
-pub async fn register_user(reg_user: RegisterUser) -> Result<()> {
+pub async fn register_user(reg_user: schemas::RegisterUser) -> Result<()> {
     debug!("Registering user: {:?}", reg_user);
 
-    let RegisterUser {
+    let schemas::RegisterUser {
         username,
         email,
         password,
@@ -34,10 +33,10 @@ pub async fn register_user(reg_user: RegisterUser) -> Result<()> {
     Ok(())
 }
 
-pub async fn login_user(login_user: LoginUser) -> Result<UserResponse> {
+pub async fn login_user(login_user: schemas::LoginUser) -> Result<schemas::UserResponse> {
     debug!("Logging in user: {:?}", login_user);
 
-    let LoginUser { username, password } = login_user;
+    let schemas::LoginUser { username, password } = login_user;
 
     let query = r#"
         SELECT * FROM users
@@ -47,7 +46,7 @@ pub async fn login_user(login_user: LoginUser) -> Result<UserResponse> {
 
     trace!("Query: {}", query);
 
-    let user: Option<User> = DB
+    let user: Option<models::User> = DB
         .query(query)
         .bind(("username", username))
         .bind(("password", password))
@@ -56,13 +55,15 @@ pub async fn login_user(login_user: LoginUser) -> Result<UserResponse> {
 
     let user = user.ok_or(Error::AuthError)?;
 
-    let user_res = UserResponse {
+    let token = create_jwt(user.id.to_string().as_str(), &user.role)?;
+
+    let user_res = schemas::UserResponse {
         id: user.id.to_string(),
         username: user.username,
         created_at: user.created_at,
         updated_at: user.updated_at,
         email: user.email,
-        token: "".to_string(),
+        token: token,
     };
 
     debug!("User logged in successfully: {:?}", user_res);

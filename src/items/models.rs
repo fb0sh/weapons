@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
-const ITEMS: &str = "items";
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {

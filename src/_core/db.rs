@@ -92,9 +92,10 @@ pub async fn init_tables() -> Result<()> {
         DEFINE FIELD status ON items TYPE string
             ASSERT $value IN ["draft", "done", "verified"]
             DEFAULT "draft";
-        DEFINE FIELD read_scope ON items TYPE string
-            ASSERT $value IN ["public", "private", "restricted"]
-            DEFAULT "private";
+        -- DEFINE FIELD read_scope ON items TYPE string
+        --     ASSERT $value IN ["public", "private", "restricted"]
+        --     DEFAULT "private";
+        -- 面向团队内部，无需对外开放，应是所有人可见；但修改仍需要限制
         DEFINE FIELD created_at ON items TYPE datetime DEFAULT time::now();
         DEFINE FIELD updated_at ON items TYPE datetime DEFAULT time::now();
 
