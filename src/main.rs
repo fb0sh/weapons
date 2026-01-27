@@ -1,12 +1,12 @@
-use actix_web::{App, HttpServer};
-
 mod db;
 mod error;
+mod indexes;
 mod models;
 mod prelude;
 mod routes;
 mod schemas;
 mod services;
+use actix_web::{App, HttpServer};
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
