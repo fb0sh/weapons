@@ -13,13 +13,13 @@ use actix_web::{App, HttpServer};
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
-    // _core::init_db()
-    //     .await
-    //     .map_err(|e| format!("Faild to init database: {}", e))?;
+    _core::init_db()
+        .await
+        .map_err(|e| format!("Faild to init database: {}", e))?;
 
-    // _core::db::init_tables()
-    //     .await
-    //     .map_err(|e| format!("Faild to init tables: {}", e))?;
+    _core::init_tables()
+        .await
+        .map_err(|e| format!("Faild to init tables: {}", e))?;
 
     tracing::info!("Starting server on http://0.0.0.0:8080");
 
@@ -27,6 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         App::new()
             .service(users::routes::login_user_handler)
             .service(users::routes::register_user_handler)
+            .service(categories::routes::get_categories)
     })
     .bind(("0.0.0.0", 8080))?
     .run()

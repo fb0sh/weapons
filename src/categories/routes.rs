@@ -2,7 +2,6 @@ use super::*;
 use crate::prelude::*;
 
 #[get("/categories")]
-pub async fn get_categories() -> Result<Json<Vec<schemas::CategoryInfo>>> {
-    // services::categories::get_categories().await
-    unimplemented!()
+pub async fn get_categories(_: Claims) -> Result<Json<Vec<schemas::CategoryInfo>>> {
+    Ok(Json(services::get_categories().await?))
 }

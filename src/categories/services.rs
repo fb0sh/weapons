@@ -4,6 +4,8 @@ use crate::prelude::*;
 pub async fn get_categories() -> Result<Vec<schemas::CategoryInfo>> {
     let categories: Vec<models::Category> = DB.select(CATEGORIES).await?;
 
+    debug!("Categories: {:?}", categories);
+
     Ok(categories
         .into_iter()
         .map(|category| schemas::CategoryInfo {
