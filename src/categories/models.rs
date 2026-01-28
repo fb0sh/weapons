@@ -1,4 +1,4 @@
-use crate::_core::SurrealModel;
+use crate::_core::{SurrealModel, curd::OwnableResource};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
@@ -19,5 +19,11 @@ impl SurrealModel for Category {
 
     fn id(&self) -> Option<&RecordId> {
         self.id.as_ref()
+    }
+}
+
+impl OwnableResource for Category {
+    fn owner_id(&self) -> Option<&RecordId> {
+        self.maintainer.as_ref()
     }
 }

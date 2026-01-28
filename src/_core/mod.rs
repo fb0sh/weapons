@@ -1,9 +1,9 @@
+pub mod curd;
 mod db;
 mod dir;
 mod error;
 mod jwt;
 mod logger;
-
 pub use db::{DB, SurrealModel, init_db, init_tables};
 pub use error::{Error, Result};
 pub use jwt::{Claims, create_jwt, verify_jwt};

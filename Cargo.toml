@@ -16,3 +16,5 @@ tantivy = "0.25.0"
 jsonwebtoken = "9.3.0"
 futures-util = "0.3.30"
 dotenvy = "0.15.7"
+
+async-trait = "0.1.89"

@@ -3,8 +3,8 @@ use chrono::Utc;
 use super::*;
 use crate::prelude::*;
 
-pub async fn get_tags() -> Result<Vec<schemas::TagInfo>> {
-    let tags: Vec<models::Tag> = DB.select(models::Tag::table()).await?;
+pub async fn get_tags(claims: Claims) -> Result<Vec<schemas::TagInfo>> {
+    let tags = curd::list_resources::<models::Tag>().await?;
 
     debug!("Tags: {:?}", tags);
 
@@ -12,8 +12,9 @@ pub async fn get_tags() -> Result<Vec<schemas::TagInfo>> {
         .into_iter()
         .map(|tag| -> Result<schemas::TagInfo> {
             Ok(schemas::TagInfo {
-                id: tag.id_str()?,
+                id: tag.id_key_str()?,
                 name: tag.name,
+                you_are_maintainer: tag.maintainer == claims.get_user_id(),
             })
         })
         .collect();
@@ -21,47 +22,36 @@ pub async fn get_tags() -> Result<Vec<schemas::TagInfo>> {
     tags_info
 }
 
-pub async fn create_tag(claims: Claims, tag: schemas::CreateTag) -> Result<schemas::TagInfo> {
-    let tag: Option<models::Tag> = DB
-        .create(models::Tag::table())
-        .content(models::Tag {
-            id: None,
-            maintainer: Some(claims.sub.parse()?),
-            name: tag.name,
-            created_at: Utc::now(),
-            updated_at: Utc::now(),
-        })
-        .await?;
-
-    let tag = tag.ok_or(Error::CreateResourceError("Create Tag faild".to_string()))?;
+pub async fn get_tag(claims: Claims, tag_id: String) -> Result<schemas::TagInfo> {
+    let tag = curd::get_resource::<models::Tag>(tag_id).await?;
 
     Ok(schemas::TagInfo {
-        id: tag.id_str()?,
+        id: tag.id_key_str()?,
         name: tag.name,
+        you_are_maintainer: tag.maintainer == claims.get_user_id(),
     })
 }
 
-pub async fn update_tag(tag_id: String, tag: schemas::UpdateTag) -> Result<schemas::TagInfo> {
-    let tag: Option<models::Tag> = DB.update((models::Tag::table(), tag_id)).merge(tag).await?;
-
-    let tag = tag.ok_or(Error::UpdateResourceError("Update Tag faild".to_string()))?;
+pub async fn create_tag(tag: schemas::CreateTag) -> Result<schemas::TagInfo> {
+    let tag = curd::create_resource::<models::Tag, schemas::CreateTag>(tag).await?;
 
     Ok(schemas::TagInfo {
-        id: tag.id_str()?,
+        id: tag.id_key_str()?,
         name: tag.name,
+        you_are_maintainer: true,
     })
 }
 
-pub async fn delete_tag(tag_id: String) -> Result<()> {
-    let deleted_tag: Option<models::Tag> = DB.delete((models::Tag::table(), tag_id)).await?;
+pub async fn update_tag(
+    claims: Claims,
+    tag_id: String,
+    tag: schemas::UpdateTag,
+) -> Result<schemas::TagInfo> {
+    let tag = curd::update_resource::<models::Tag, schemas::UpdateTag>(claims, tag_id, tag).await?;
 
-    match deleted_tag {
-        Some(tag) => {
-            debug!("Tag deleted: {:?}", tag);
-            Ok(())
-        }
-        None => Err(Error::ResourceNotFound(
-            "deleted_tag not found; pls check id".to_string(),
-        )),
-    }
+    Ok(schemas::TagInfo {
+        id: tag.id_key_str()?,
+        name: tag.name,
+        you_are_maintainer: true,
+    })
 }

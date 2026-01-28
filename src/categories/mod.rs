@@ -7,5 +7,6 @@ pub fn config(cfg: &mut actix_web::web::ServiceConfig) {
     cfg.service(routes::get_categories)
         .service(routes::create_category)
         .service(routes::update_category)
-        .service(routes::delete_category);
+        .service(routes::delete_category)
+        .service(routes::get_category);
 }

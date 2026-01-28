@@ -3,6 +3,7 @@ use chrono::{Duration, Utc};
 use futures_util::future::{Ready, ready};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
+use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -11,6 +12,7 @@ pub struct Claims {
     pub exp: usize,   // 过期时间
 }
 
+// 后续通过环境变量引入
 const SECRET: &[u8] = b"your_very_safe_secret";
 
 impl Claims {
@@ -21,16 +23,21 @@ impl Claims {
             Err(crate::_core::error::Error::PermissionError)
         }
     }
+    pub fn get_user_id(&self) -> Option<RecordId> {
+        let sub = self.sub.as_str();
+        let sub = sub.parse::<RecordId>().ok()?;
+        Some(sub)
+    }
 }
 // 生成 Token
-pub fn create_jwt(user_id: &str, role: &str) -> crate::_core::error::Result<String> {
+pub fn create_jwt(user_id: &RecordId, role: &str) -> crate::_core::error::Result<String> {
     let expiration = Utc::now()
         .checked_add_signed(Duration::hours(6))
         .expect("valid timestamp")
         .timestamp() as usize;
 
     let claims = Claims {
-        sub: user_id.to_owned(),
+        sub: user_id.to_string(),
         role: role.to_owned(),
         exp: expiration,
     };
@@ -72,7 +79,8 @@ impl FromRequest for Claims {
                     Ok(claims) => {
                         return ready(Ok(claims));
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        tracing::debug!("Invalid token: {:?}", e);
                         return ready(Err(actix_web::error::ErrorUnauthorized("Invalid token")));
                     }
                 }

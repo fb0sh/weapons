@@ -137,13 +137,9 @@ pub trait SurrealModel {
 
     fn id(&self) -> Option<&RecordId>;
 
-    fn id_str(&self) -> Result<String> {
+    fn id_key_str(&self) -> Result<String> {
         self.id()
-            .map(|id| id.to_string())
+            .map(|id| id.key().to_string())
             .ok_or(Error::InternalServerError("Has No Id ????".to_string()))
-    }
-
-    fn is_persisted(&self) -> bool {
-        self.id().is_some()
     }
 }

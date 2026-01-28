@@ -55,15 +55,18 @@ pub async fn login_user(login_user: schemas::LoginUser) -> Result<schemas::UserR
 
     let user = user.ok_or(Error::AuthError)?;
 
-    let token = create_jwt(user.id_str()?.as_str(), &user.role)?;
+    // let token =
 
     let user_res = schemas::UserResponse {
-        id: user.id_str()?,
+        id: user.id_key_str()?,
         username: user.username,
         created_at: user.created_at,
         updated_at: user.updated_at,
         email: user.email,
-        token: token,
+        token: create_jwt(
+            &user.id.ok_or(Error::DbError("no id".to_string()))?,
+            &user.role,
+        )?,
     };
 
     debug!("User logged in successfully: {:?}", user_res);
