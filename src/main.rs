@@ -8,10 +8,17 @@ mod tags;
 mod users;
 
 use actix_web::{App, HttpServer};
+use dotenvy::dotenv;
 
 #[actix_web::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    tracing_subscriber::fmt::init();
+    dotenv().ok();
+
+    _core::init_data_dir()
+        .await
+        .map_err(|e| format!("Faild to init data dir: {}", e))?;
+
+    let _guard = _core::init_tracing();
 
     _core::init_db()
         .await
@@ -25,12 +32,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     HttpServer::new(|| {
         App::new()
-            .service(users::routes::login_user_handler)
-            .service(users::routes::register_user_handler)
-            .service(categories::routes::get_categories)
+            // /users
+            .configure(users::config)
+            // /categories
+            .configure(categories::config)
     })
     .bind(("0.0.0.0", 8080))?
     .run()
     .await?;
+
     Ok(())
 }

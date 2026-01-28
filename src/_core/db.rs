@@ -1,12 +1,17 @@
+use crate::_core::Error;
+use crate::_core::dir::data_dir;
 use crate::prelude::Result;
 use std::sync::LazyLock;
+use surrealdb::RecordId;
 use surrealdb::Surreal;
 use surrealdb::engine::any::Any;
 
 pub static DB: LazyLock<Surreal<Any>> = LazyLock::new(Surreal::init);
 
 pub async fn init_db() -> Result<()> {
-    DB.connect("rocksdb:./data/surreal_rocks.db").await?;
+    let db_url = format!("rocksdb:{}", data_dir().join("surreal_rocks.db").display());
+
+    DB.connect(&db_url).await?;
 
     DB.use_ns("all").use_db("weapons").await?;
 
@@ -123,4 +128,22 @@ pub async fn init_tables() -> Result<()> {
     }
 
     Ok(())
+}
+
+pub trait SurrealModel {
+    fn table() -> &'static str
+    where
+        Self: Sized;
+
+    fn id(&self) -> Option<&RecordId>;
+
+    fn id_str(&self) -> Result<String> {
+        self.id()
+            .map(|id| id.to_string())
+            .ok_or(Error::InternalServerError("Has No Id ????".to_string()))
+    }
+
+    fn is_persisted(&self) -> bool {
+        self.id().is_some()
+    }
 }

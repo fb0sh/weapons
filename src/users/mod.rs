@@ -1,6 +1,10 @@
 pub mod models;
-pub mod routes;
-pub mod schemas;
+mod routes;
+mod schemas;
 mod services;
 
-pub const USERS: &str = "users";
+pub fn config(cfg: &mut actix_web::web::ServiceConfig) {
+    cfg.service(routes::delete_user_handler)
+        .service(routes::login_user_handler)
+        .service(routes::register_user_handler);
+}

@@ -24,3 +24,16 @@ pub async fn login_user_handler(
 
     Ok(Json(user_res))
 }
+
+#[delete("/users/{id}")]
+pub async fn delete_user_handler(id: Path<String>, claims: Claims) -> Result<&'static str> {
+    debug!("Deleting user: {:?}", id);
+
+    claims.is_manager()?;
+
+    info!("User ({}) deleting", claims.sub);
+
+    services::delete_user(id.to_string().as_str()).await?;
+
+    Ok("User deleted successfully")
+}

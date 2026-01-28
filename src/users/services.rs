@@ -1,5 +1,5 @@
 use super::*;
-use crate::prelude::*;
+use crate::{prelude::*, users::models::User};
 
 pub async fn register_user(reg_user: schemas::RegisterUser) -> Result<()> {
     debug!("Registering user: {:?}", reg_user);
@@ -55,10 +55,10 @@ pub async fn login_user(login_user: schemas::LoginUser) -> Result<schemas::UserR
 
     let user = user.ok_or(Error::AuthError)?;
 
-    let token = create_jwt(user.id.to_string().as_str(), &user.role)?;
+    let token = create_jwt(user.id_str()?.as_str(), &user.role)?;
 
     let user_res = schemas::UserResponse {
-        id: user.id.to_string(),
+        id: user.id_str()?,
         username: user.username,
         created_at: user.created_at,
         updated_at: user.updated_at,
@@ -69,4 +69,18 @@ pub async fn login_user(login_user: schemas::LoginUser) -> Result<schemas::UserR
     debug!("User logged in successfully: {:?}", user_res);
 
     Ok(user_res)
+}
+
+pub async fn delete_user(user_id: &str) -> Result<()> {
+    let deleted_user: Option<User> = DB.delete((User::table(), user_id)).await?;
+
+    match deleted_user {
+        Some(user) => {
+            debug!("User deleted: {:?}", user);
+            Ok(())
+        }
+        None => Err(Error::ResourceNotFound(
+            "deleted_user not found; pls check id".to_string(),
+        )),
+    }
 }

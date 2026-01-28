@@ -3,4 +3,7 @@ pub mod routes;
 pub mod schemas;
 mod services;
 
-pub const CATEGORIES: &str = "categories";
+pub fn config(cfg: &mut actix_web::web::ServiceConfig) {
+    cfg.service(routes::get_categories)
+        .service(routes::create_category);
+}

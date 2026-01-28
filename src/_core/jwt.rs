@@ -13,6 +13,15 @@ pub struct Claims {
 
 const SECRET: &[u8] = b"your_very_safe_secret";
 
+impl Claims {
+    pub fn is_manager(&self) -> crate::_core::error::Result<()> {
+        if self.role == "manager" {
+            Ok(())
+        } else {
+            Err(crate::_core::error::Error::PermissionError)
+        }
+    }
+}
 // 生成 Token
 pub fn create_jwt(user_id: &str, role: &str) -> crate::_core::error::Result<String> {
     let expiration = Utc::now()

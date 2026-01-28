@@ -2,10 +2,11 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use surrealdb::RecordId;
 
+use crate::_core::SurrealModel;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Item {
-    pub id: RecordId,
+    pub id: Option<RecordId>,
     pub maintainer: Option<RecordId>,
     pub category: Option<RecordId>,
     pub title: String,
@@ -22,4 +23,14 @@ pub struct Item {
 
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+}
+
+impl SurrealModel for Item {
+    fn table() -> &'static str {
+        "items"
+    }
+
+    fn id(&self) -> Option<&RecordId> {
+        self.id.as_ref()
+    }
 }
