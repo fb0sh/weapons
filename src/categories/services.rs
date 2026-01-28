@@ -48,3 +48,36 @@ pub async fn create_category(
         name: category.name,
     })
 }
+
+pub async fn update_category(
+    category_id: String,
+    category: schemas::UpdateCategory,
+) -> Result<CategoryInfo> {
+    let category: Option<Category> = DB
+        .update((Category::table(), category_id))
+        .merge(category)
+        .await?;
+
+    let category = category.ok_or(Error::UpdateResourceError(
+        "Update Category faild".to_string(),
+    ))?;
+
+    Ok(schemas::CategoryInfo {
+        id: category.id_str()?,
+        name: category.name,
+    })
+}
+
+pub async fn delete_category(category_id: String) -> Result<()> {
+    let deleted_category: Option<Category> = DB.delete((Category::table(), category_id)).await?;
+
+    match deleted_category {
+        Some(category) => {
+            debug!("Category deleted: {:?}", category);
+            Ok(())
+        }
+        None => Err(Error::ResourceNotFound(
+            "deleted_category not found; pls check id".to_string(),
+        )),
+    }
+}

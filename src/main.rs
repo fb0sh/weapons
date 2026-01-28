@@ -36,6 +36,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .configure(users::config)
             // /categories
             .configure(categories::config)
+            // /tags
+            .configure(tags::config)
     })
     .bind(("0.0.0.0", 8080))?
     .run()

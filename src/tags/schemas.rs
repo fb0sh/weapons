@@ -1,17 +1,17 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CategoryInfo {
+pub struct TagInfo {
     pub id: String,
     pub name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CreateCategory {
+pub struct CreateTag {
     pub name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateCategory {
+pub struct UpdateTag {
     pub name: Option<String>,
 }
